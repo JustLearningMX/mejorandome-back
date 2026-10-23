@@ -25,6 +25,16 @@ export class EnvironmentVariables {
     message: 'DATABASE_URL debe ser una URL de conexión MySQL válida (mysql://...)',
   })
   DATABASE_URL: string;
+
+  @IsString()
+  GOOGLE_CLIENT_ID: string;
+
+  @IsString()
+  JWT_SECRET: string;
+
+  @IsString()
+  @IsOptional()
+  JWT_EXPIRES_IN: string = '7d';
 }
 
 export function validateEnv(config: Record<string, unknown>): EnvironmentVariables {
