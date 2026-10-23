@@ -1,5 +1,5 @@
 import { plainToInstance } from 'class-transformer';
-import { IsEnum, IsNumber, IsOptional, IsString, validateSync } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString, Matches, validateSync } from 'class-validator';
 
 export enum Environment {
   Development = 'development',
@@ -19,6 +19,12 @@ export class EnvironmentVariables {
   @IsString()
   @IsOptional()
   CORS_ORIGIN?: string;
+
+  @IsString()
+  @Matches(/^mysql(2)?:\/\/.+/i, {
+    message: 'DATABASE_URL debe ser una URL de conexión MySQL válida (mysql://...)',
+  })
+  DATABASE_URL: string;
 }
 
 export function validateEnv(config: Record<string, unknown>): EnvironmentVariables {
