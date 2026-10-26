@@ -11,7 +11,7 @@ describe('validateEnv', () => {
   it('should validate valid environment with defaults', () => {
     const result = validateEnv(validConfig);
     expect(result.NODE_ENV).toBe(Environment.Development);
-    expect(result.PORT).toBe(3000);
+    expect(result.PORT).toBe(3005);
     expect(result.DATABASE_URL).toBe(validConfig.DATABASE_URL);
     expect(result.GOOGLE_CLIENT_ID).toBe(validConfig.GOOGLE_CLIENT_ID);
     expect(result.JWT_SECRET).toBe(validConfig.JWT_SECRET);

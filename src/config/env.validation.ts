@@ -14,7 +14,7 @@ export class EnvironmentVariables {
 
   @IsNumber()
   @IsOptional()
-  PORT: number = 3000;
+  PORT: number = 3005;
 
   @IsString()
   @IsOptional()
