@@ -19,6 +19,7 @@ model User {
   email     String   @unique @db.VarChar(254)
   name      String   @db.VarChar(255)
   timezone  String   @default("America/Mexico_City") @db.VarChar(64)
+  stepsGoal Int      @default(10000) @map("steps_goal")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -117,13 +118,16 @@ enum MealType {
 // ExerciseSession
 // ---------------------------------------------------------------------------
 model ExerciseSession {
-  id              String    @id @default(uuid()) @db.Char(36)
-  healthDayId     String    @map("health_day_id") @db.Char(36)
-  activityType    String    @map("activity_type") @db.VarChar(128)
-  durationMinutes Int       @map("duration_minutes") @db.SmallInt
-  startedAt       DateTime? @map("started_at")
-  notes           String?   @db.Text
-  createdAt       DateTime  @default(now()) @map("created_at")
+  id              String   @id @default(uuid()) @db.Char(36)
+  healthDayId     String   @map("health_day_id") @db.Char(36)
+  exerciseType    String   @map("exercise_type") @db.VarChar(128)
+  durationMinutes Int      @map("duration_minutes") @db.SmallInt
+  intensity       String?  @db.VarChar(32)
+  caloriesBurned  Int?     @map("calories_burned")
+  occurredAt      DateTime @default(now()) @map("occurred_at")
+  notes           String?  @db.Text
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   healthDay HealthDay @relation(fields: [healthDayId], references: [id], onDelete: Cascade)
 
@@ -140,6 +144,7 @@ model DailyActivity {
   steps       Int
   source      String   @default("manual") @db.VarChar(64)
   recordedAt  DateTime @map("recorded_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
 
   healthDay HealthDay @relation(fields: [healthDayId], references: [id], onDelete: Cascade)
 
