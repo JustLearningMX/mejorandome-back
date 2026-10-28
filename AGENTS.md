@@ -101,18 +101,35 @@ No implementes automáticamente Clean Architecture completa, CQRS, Event Sourcin
 
 ## Persistencia
 
-La tecnología de base de datos y ORM todavía debe confirmarse.
+- Base de datos: MySQL (v8.x en OCI).
+- ORM: Prisma ORM.
+- Modelos, restricciones y relaciones deben responder a los requisitos reales y a `bd_architecture.md`.
+- Mantén el acceso a datos fuera de los controladores.
+- Considera integridad, fechas normalizadas (UTC en timestamps, `@db.Date` para `localDate`), unidades y unicidad por usuario y contenedor diario (`HealthDay`).
+- No simules que los datos son persistentes si solo se almacenan en memoria.
 
-Antes de añadir persistencia:
-1. Inspecciona las dependencias y decisiones existentes.
-2. Confirma la tecnología y documenta la decisión.
-3. Define modelos, restricciones y relaciones según requisitos reales.
-4. Usa migraciones versionadas si la herramienta elegida las soporta.
-5. Mantén el acceso a datos fuera de los controladores.
-6. No crees un repositorio genérico por defecto; evalúa si una abstracción aporta valor al dominio o a las pruebas.
-7. Considera integridad, fechas, unidades y duplicados de acuerdo con los requisitos.
+### Reglas críticas para migraciones de Prisma en MySQL
 
-No simules que los datos son persistentes si solo se almacenan en memoria.
+1. **Separación estricta de `RENAME` y `MODIFY`:**
+   - MySQL **no permite** renombrar y modificar la misma columna en una única cláusula `ALTER TABLE`. El motor no reconoce el nuevo identificador en la misma sentencia.
+   - **Obligatorio:** Dividir en dos sentencias `ALTER TABLE` independientes: primero `RENAME COLUMN`, y en un segundo statement `MODIFY COLUMN` / `ADD COLUMN`.
+2. **Incompatibilidad de `IF NOT EXISTS` en MySQL:**
+   - La cláusula `ADD COLUMN IF NOT EXISTS` **no es compatible con MySQL estándar** (es exclusiva de MariaDB y genera error de sintaxis `1064`).
+   - Si se requiere verificar existencia de forma condicional/idempotente, se debe usar un bloque `PREPARE` / `EXECUTE` con `INFORMATION_SCHEMA.COLUMNS`:
+     ```sql
+     SET @s = (SELECT IF(
+       (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '<tabla>' AND COLUMN_NAME = '<columna>') > 0,
+       'SELECT 1',
+       'ALTER TABLE `<tabla>` ADD COLUMN `<columna>` <tipo> ...'
+     ));
+     PREPARE stmt FROM @s;
+     EXECUTE stmt;
+     DEALLOCATE PREPARE stmt;
+     ```
+3. **Commit implícito de sentencias DDL:**
+   - MySQL ejecuta un commit implícito tras cada sentencia `ALTER TABLE`. Si una migración con varios statements falla en la mitad, los cambios previos ya quedan aplicados en la base de datos aunque Prisma marque la migración como fallida.
+   - Antes de resolver con `prisma migrate resolve --rolled-back`, verifica qué sentencias DDL alcanzaron a ejecutarse en la BD para evitar errores de columna duplicada (`1060`) o inexistente en el reintento.
 
 ## Seguridad y privacidad
 
