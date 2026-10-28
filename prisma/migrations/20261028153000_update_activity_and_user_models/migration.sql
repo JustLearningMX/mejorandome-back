@@ -1,5 +1,13 @@
--- AlterTable
-ALTER TABLE `users` ADD COLUMN IF NOT EXISTS `steps_goal` INT NOT NULL DEFAULT 10000;
+-- AlterTable: agregar steps_goal a users solo si no existe (compatible MySQL 5.7+/8.x)
+SET @s = (SELECT IF(
+  (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+   WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'steps_goal') > 0,
+  'SELECT 1',
+  'ALTER TABLE `users` ADD COLUMN `steps_goal` INT NOT NULL DEFAULT 10000'
+));
+PREPARE stmt FROM @s;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- AlterTable: renombrar columnas en exercise_sessions (paso 1)
 ALTER TABLE `exercise_sessions`
