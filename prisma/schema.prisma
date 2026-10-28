@@ -87,21 +87,17 @@ model WeightMeasurement {
 // MealEntry
 // ---------------------------------------------------------------------------
 model MealEntry {
-  id                 String    @id @default(uuid()) @db.Char(36)
-  healthDayId        String    @map("health_day_id") @db.Char(36)
-  mealType           MealType  @map("meal_type")
-  occurredAt         DateTime  @map("occurred_at")
-  description        String?   @db.Text
-  initialPortion     String?   @map("initial_portion") @db.VarChar(255)
-  hungerBefore       Int?      @map("hunger_before") @db.TinyInt
-  satietyAfter       Int?      @map("satiety_after") @db.TinyInt
-  urgeToRepeat       Int?      @map("urge_to_repeat") @db.TinyInt
-  waited10Minutes    Boolean?  @map("waited_10_minutes")
-  repeated           Boolean?
-  additionalPortion  String?   @map("additional_portion") @db.VarChar(255)
-  feelingBeforeRepeat String?  @map("feeling_before_repeat") @db.Text
-  pauseActivity      String?   @map("pause_activity") @db.Text
-  createdAt          DateTime  @default(now()) @map("created_at")
+  id                   String    @id @default(uuid()) @db.Char(36)
+  healthDayId          String    @map("health_day_id") @db.Char(36)
+  mealType             MealType  @map("meal_type")
+  occurredAt           DateTime  @map("occurred_at")
+  description          String?   @db.Text
+  hungerBefore         Int?      @map("hunger_before") @db.TinyInt
+  satietyAfter         Int?      @map("satiety_after") @db.TinyInt
+  wantedMoreEvenIfFull Boolean?  @default(false) @map("wanted_more_even_if_full")
+  pausedBeforeMore     Boolean?  @map("paused_before_more")
+  extraEatingContext   String?   @map("extra_eating_context") @db.Text
+  createdAt            DateTime  @default(now()) @map("created_at")
 
   healthDay HealthDay @relation(fields: [healthDayId], references: [id], onDelete: Cascade)
 
