@@ -1,5 +1,5 @@
 -- AlterTable
-ALTER TABLE `users` ADD COLUMN `steps_goal` INT NOT NULL DEFAULT 10000;
+ALTER TABLE `users` ADD COLUMN IF NOT EXISTS `steps_goal` INT NOT NULL DEFAULT 10000;
 
 -- AlterTable: renombrar columnas en exercise_sessions (paso 1)
 ALTER TABLE `exercise_sessions`
