@@ -1,12 +1,8 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
+import { AuthErrorCode, unauthorized } from '../auth-error.js';
 import { JwtPayload } from '../interfaces/auth.interface.js';
 
 interface RequestWithUser extends Request {
@@ -29,7 +25,10 @@ export class JwtAuthGuard implements CanActivate {
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
-      throw new UnauthorizedException('Token de autorización no proporcionado');
+      throw unauthorized(
+        AuthErrorCode.AccessTokenInvalid,
+        'Token de autorización no proporcionado',
+      );
     }
 
     try {
@@ -38,8 +37,12 @@ export class JwtAuthGuard implements CanActivate {
       });
       request.user = payload;
       return true;
-    } catch {
-      throw new UnauthorizedException('Token de autorización inválido o expirado');
+    } catch (error) {
+      const code =
+        error instanceof Error && error.name === 'TokenExpiredError'
+          ? AuthErrorCode.AccessTokenExpired
+          : AuthErrorCode.AccessTokenInvalid;
+      throw unauthorized(code, 'Token de autorización inválido o expirado');
     }
   }
 

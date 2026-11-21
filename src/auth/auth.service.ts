@@ -54,24 +54,12 @@ export class AuthService {
       user = await this.findOrCreateUser(googleId, email, name);
     }
 
-    const jwtPayload: JwtPayload = {
-      sub: user.id,
-      email: user.email,
-    };
+    return this.buildAuthResponse(user);
+  }
 
-    const accessToken = await this.jwtService.signAsync(jwtPayload);
-
-    return {
-      accessToken,
-      tokenType: 'Bearer',
-      expiresIn: this.jwtExpiresIn,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        timezone: user.timezone,
-      },
-    };
+  async createSessionForUser(userId: string): Promise<AuthResponse> {
+    const user = await this.getProfile(userId);
+    return this.buildAuthResponse(user);
   }
 
   async getProfile(userId: string): Promise<AuthenticatedUser> {
@@ -88,6 +76,23 @@ export class AuthService {
       email: user.email,
       name: user.name,
       timezone: user.timezone,
+    };
+  }
+
+  private async buildAuthResponse(user: AuthenticatedUser): Promise<AuthResponse> {
+    const jwtPayload: JwtPayload = { sub: user.id, email: user.email };
+    const accessToken = await this.jwtService.signAsync(jwtPayload);
+
+    return {
+      accessToken,
+      tokenType: 'Bearer',
+      expiresIn: this.jwtExpiresIn,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        timezone: user.timezone,
+      },
     };
   }
 

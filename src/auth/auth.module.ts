@@ -4,6 +4,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule } from '../prisma/prisma.module.js';
 import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
+import { RefreshCookieService } from './refresh-cookie.service.js';
+import { RefreshTokenService } from './refresh-token.service.js';
 import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
 
 @Module({
@@ -21,7 +23,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtAuthGuard],
+  providers: [AuthService, JwtAuthGuard, RefreshTokenService, RefreshCookieService],
   exports: [AuthService, JwtAuthGuard, JwtModule],
 })
 export class AuthModule {}

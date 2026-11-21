@@ -16,6 +16,27 @@ describe('validateEnv', () => {
     expect(result.GOOGLE_CLIENT_ID).toBe(validConfig.GOOGLE_CLIENT_ID);
     expect(result.JWT_SECRET).toBe(validConfig.JWT_SECRET);
     expect(result.JWT_EXPIRES_IN).toBe('7d');
+    expect(result.REFRESH_TOKENS_ENABLED).toBe('false');
+    expect(result.REFRESH_TOKEN_TTL_DAYS).toBe(30);
+    expect(result.REFRESH_COOKIE_PATH).toBe('/api/auth');
+  });
+
+  it('should accept custom refresh token settings', () => {
+    const result = validateEnv({
+      ...validConfig,
+      REFRESH_TOKENS_ENABLED: 'true',
+      REFRESH_TOKEN_TTL_DAYS: '45',
+      REFRESH_COOKIE_PATH: '/mejorandome-back/v1/api/auth',
+    });
+    expect(result.REFRESH_TOKENS_ENABLED).toBe('true');
+    expect(result.REFRESH_TOKEN_TTL_DAYS).toBe(45);
+    expect(result.REFRESH_COOKIE_PATH).toBe('/mejorandome-back/v1/api/auth');
+  });
+
+  it('should reject invalid refresh token settings', () => {
+    expect(() => validateEnv({ ...validConfig, REFRESH_TOKENS_ENABLED: 'yes' })).toThrow();
+    expect(() => validateEnv({ ...validConfig, REFRESH_TOKEN_TTL_DAYS: '0' })).toThrow();
+    expect(() => validateEnv({ ...validConfig, REFRESH_COOKIE_PATH: 'auth' })).toThrow();
   });
 
   it('should transform and accept valid custom PORT and NODE_ENV', () => {

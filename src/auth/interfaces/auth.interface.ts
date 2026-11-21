@@ -16,3 +16,14 @@ export interface AuthResponse {
   expiresIn: string | number;
   user: AuthenticatedUser;
 }
+
+export interface IssuedRefreshToken {
+  id: string;
+  value: string;
+  expiresAt: Date;
+}
+
+export interface RotatedRefreshToken {
+  userId: string;
+  token: IssuedRefreshToken;
+}

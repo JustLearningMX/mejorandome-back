@@ -50,6 +50,28 @@ describe('JwtAuthGuard', () => {
     await expect(guard.canActivate(context)).rejects.toThrow(UnauthorizedException);
   });
 
+  it('should report ACCESS_TOKEN_EXPIRED when the token is expired', async () => {
+    const expired = Object.assign(new Error('jwt expired'), { name: 'TokenExpiredError' });
+    jwtService.verifyAsync.mockRejectedValue(expired);
+    const context = createMockContext('Bearer expired-token');
+
+    await expect(guard.canActivate(context)).rejects.toMatchObject({
+      response: {
+        code: 'ACCESS_TOKEN_EXPIRED',
+        message: 'Token de autorización inválido o expirado',
+      },
+    });
+  });
+
+  it('should report ACCESS_TOKEN_INVALID when the token is malformed', async () => {
+    jwtService.verifyAsync.mockRejectedValue(new Error('invalid signature'));
+    const context = createMockContext('Bearer bad-token');
+
+    await expect(guard.canActivate(context)).rejects.toMatchObject({
+      response: { code: 'ACCESS_TOKEN_INVALID' },
+    });
+  });
+
   it('should attach payload to request and return true on valid token', async () => {
     const mockPayload = { sub: 'user-123', email: 'user@test.com' };
     jwtService.verifyAsync.mockResolvedValue(mockPayload);

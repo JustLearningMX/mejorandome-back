@@ -1,5 +1,15 @@
 import { plainToInstance } from 'class-transformer';
-import { IsEnum, IsNumber, IsOptional, IsString, Matches, validateSync } from 'class-validator';
+import {
+  IsEnum,
+  IsIn,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Matches,
+  Min,
+  validateSync,
+} from 'class-validator';
 
 export enum Environment {
   Development = 'development',
@@ -35,6 +45,19 @@ export class EnvironmentVariables {
   @IsString()
   @IsOptional()
   JWT_EXPIRES_IN: string = '7d';
+
+  @IsIn(['true', 'false'])
+  @IsOptional()
+  REFRESH_TOKENS_ENABLED: string = 'false';
+
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  REFRESH_TOKEN_TTL_DAYS: number = 30;
+
+  @Matches(/^\/.*/, { message: 'REFRESH_COOKIE_PATH debe comenzar con /' })
+  @IsOptional()
+  REFRESH_COOKIE_PATH: string = '/api/auth';
 }
 
 export function validateEnv(config: Record<string, unknown>): EnvironmentVariables {
