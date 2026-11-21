@@ -1,5 +1,6 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import cookieParser from 'cookie-parser';
 import request from 'supertest';
 import { App } from 'supertest/types.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -15,6 +16,7 @@ describe('Auth (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     app.setGlobalPrefix('api');
+    app.use(cookieParser());
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -46,6 +48,18 @@ describe('Auth (e2e)', () => {
         .expect(401);
 
       expect(response.body).toHaveProperty('message', 'Token de Google inválido o expirado');
+    });
+  });
+
+  describe('POST /api/auth/refresh', () => {
+    it('should return 404 while refresh tokens are disabled', async () => {
+      await request(app.getHttpServer()).post('/api/auth/refresh').expect(404);
+    });
+  });
+
+  describe('POST /api/auth/logout', () => {
+    it('should return 204 even without a refresh cookie', async () => {
+      await request(app.getHttpServer()).post('/api/auth/logout').expect(204);
     });
   });
 

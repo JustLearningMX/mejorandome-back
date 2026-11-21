@@ -142,6 +142,14 @@ El prefijo `/api` deberá configurarse de forma consistente en NestJS y document
 
 Los contratos HTTP deben ser explícitos y estables. Los DTOs no deben exponer directamente modelos internos de persistencia si eso acopla la API a la implementación de la base de datos.
 
+### Sesión y refresh token
+
+El login (`POST /api/auth/google`) devuelve un access token JWT. Con `REFRESH_TOKENS_ENABLED=true` además emite un refresh token opaco en la cookie `httpOnly` `mejorandome_rt` (`SameSite=Strict`, `Secure` en producción, `Path` = `REFRESH_COOKIE_PATH`). El token se guarda hasheado (SHA-256) en `refresh_tokens` y se rota en cada `POST /api/auth/refresh`; reutilizar un token ya rotado revoca su familia. `POST /api/auth/logout` revoca la familia y borra la cookie. Con el flag en `false` (por defecto) el comportamiento es el anterior y `/api/auth/refresh` responde 404.
+
+Los errores 401 de autenticación incluyen un campo `code` (`ACCESS_TOKEN_EXPIRED`, `ACCESS_TOKEN_INVALID`, `REFRESH_TOKEN_MISSING`, `REFRESH_TOKEN_INVALID`, `REFRESH_TOKEN_REUSED`). El contrato completo está en el repositorio del frontend: `.references/from-backend/2026.11.21-auth-refresh-endpoints.md`.
+
+Los tokens vencidos o revocados no se purgan automáticamente; la limpieza periódica queda pendiente.
+
 ## Requisitos previos
 
 - Node.js en una versión LTS compatible con la versión de NestJS instalada.
